@@ -1,0 +1,36 @@
+# encoding: UTF-8
+
+FROM <%= ENV.fetch('FROM') %>
+MAINTAINER The Blue Beluga <admin@bluebeluga.io>
+
+LABEL name="terraform"
+LABEL description="Alpine Linux Base with Terraform and the AWS cli"
+LABEL version="<%= ENV.fetch('TERRAFORM_VERSION') %>"
+LABEL git_revision="<%= ENV.fetch('GIT_REVISION') %>"
+
+ENV TERRAFORM_VERSION=<%= ENV.fetch('TERRAFORM_VERSION') %>
+
+RUN addgroup terraform && \
+    adduser -S -G terraform terraform && \
+    apk-install python py-pip jq make && \
+    pip install --upgrade pip awscli && \
+    apk-install --no-cache --virtual .build-deps aria2 gnupg unzip && \
+    gpg --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C && \
+    aria2c -x5 -j5 "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+    aria2c -x5 -j5 "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS.sig" && \
+    aria2c -x5 -j5 "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS" && \
+    gpg --batch --verify "terraform_${TERRAFORM_VERSION}_SHA256SUMS.sig" "terraform_${TERRAFORM_VERSION}_SHA256SUMS" && \
+    grep "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" "terraform_${TERRAFORM_VERSION}_SHA256SUMS" | sha256sum -c && \
+    unzip -d /bin "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+    apk del .build-deps && \
+    rm -rfv "terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
+            "terraform_${TERRAFORM_VERSION}_SHA256SUMS.sig" \
+            "terraform_${TERRAFORM_VERSION}_SHA256SUMS" \
+            /var/lib/apt/lists/*
+
+USER nobody
+VOLUME ["/data"]
+WORKDIR /data
+
+ENTRYPOINT ["/bin/terraform"]
+CMD ["--help"]

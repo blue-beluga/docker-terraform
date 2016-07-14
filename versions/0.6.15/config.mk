@@ -1,0 +1,2 @@
+
+export TERRAFORM_VERSION = 0.6.15
