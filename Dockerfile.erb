@@ -3,10 +3,11 @@
 FROM <%= ENV.fetch('FROM') %>
 MAINTAINER The Blue Beluga <admin@bluebeluga.io>
 
-LABEL name="terraform"
-LABEL description="Alpine Linux Base with Terraform and the AWS cli"
-LABEL version="<%= ENV.fetch('TERRAFORM_VERSION') %>"
-LABEL git_revision="<%= ENV.fetch('GIT_REVISION') %>"
+LABEL vendor="The Blue Beluga Company"
+LABEL io.bluebeluga.terraform.description="Terraform and AWS CLI"
+LABEL io.bluebeluga.terraform.version="<%= ENV.fetch('TAG') %>"
+LABEL io.bluebeluga.terraform.git-revision="<%= ENV.fetch('GIT_REVISION') %>"
+LABEL io.bluebeluga.terraform.release-date="<%= Time.now.strftime('%B %d, %Y %H:%M') %>"
 
 ENV TERRAFORM_VERSION=<%= ENV.fetch('TERRAFORM_VERSION') %>
 
